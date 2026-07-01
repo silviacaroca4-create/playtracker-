@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlayTracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',sans-serif;background:#0f0f13;color:#e8e8f0;min-height:100vh}
+
+  /* NAV */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:64px;background:#15151d;border-bottom:1px solid #2a1f4e;position:sticky;top:0;z-index:100}
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo-icon{width:38px;height:38px;background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .logo-text{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;letter-spacing:0.5px}
+  .logo-text span{color:#a855f7}
+  .nav-links{display:flex;gap:8px}
+  .nav-link{padding:9px 18px;border-radius:10px;font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:600;letter-spacing:0.3px;color:#9999b8;cursor:pointer;border:none;background:none;transition:all 0.2s}
+  .nav-link:hover{color:#e8e8f0;background:#1e1e2e}
+  .nav-link.active{color:#fff;background:linear-gradient(135deg,#7c3aed,#a855f7);box-shadow:0 0 18px 2px rgba(168,85,247,0.65),0 0 0 1px #c084fc}
+  .nav-right{display:flex;align-items:center;gap:10px}
+  .btn-login{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid #4c2d8a;background:none;color:#c084fc;transition:all 0.2s}
+  .btn-login:hover{background:#1e1533}
+  .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#c026d3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;border:2px solid #4c2d8a}
+
+  /* MODAL DE LOGIN */
+  .modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,15,0.7);z-index:200;align-items:center;justify-content:center}
+  .modal-overlay.open{display:flex}
+  .modal-box{background:#15151d;border:1px solid #2a1f4e;border-radius:16px;padding:2rem;width:340px;max-width:90%;position:relative}
+  .modal-box h3{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;margin-bottom:0.25rem}
+  .modal-box p.modal-sub{font-size:12px;color:#6666a0;margin-bottom:1.25rem}
+  .modal-close{position:absolute;top:14px;right:16px;background:none;border:none;color:#6666a0;font-size:18px;cursor:pointer}
+  .modal-field{margin-bottom:0.9rem}
+  .modal-field label{display:block;font-size:12px;color:#9999b8;margin-bottom:5px}
+  .modal-field input,.modal-field select{width:100%;padding:9px 12px;background:#0f0f13;border:1px solid #2a1f4e;border-radius:8px;color:#e8e8f0;font-size:13px;outline:none}
+  .modal-field input:focus,.modal-field select:focus{border-color:#7c3aed}
+  .modal-submit{width:100%;padding:10px;margin-top:0.5rem;background:linear-gradient(135deg,#7c3aed,#9333ea);border:none;border-radius:9px;color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+  .modal-submit:hover{background:linear-gradient(135deg,#6d28d9,#7c3aed)}
+  .modal-note{font-size:11px;color:#555580;text-align:center;margin-top:0.75rem}
+
+  /* PAGES */
+  .page{display:none;padding:2rem}
+  .page.active{display:block}
+
+  /* HERO */
+  .hero{background:linear-gradient(135deg,#1a0a3d 0%,#2d1060 40%,#1a0a3d 100%);border-radius:16px;padding:3rem 2.5rem;margin-bottom:2rem;position:relative;overflow:hidden;border:1px solid #3d1f7a}
+  .hero::before{content:'';position:absolute;right:-60px;top:-60px;width:300px;height:300px;background:radial-gradient(circle,rgba(168,85,247,0.15) 0%,transparent 70%);pointer-events:none}
+  .hero-tag{display:inline-block;padding:4px 12px;background:#2d1060;border:1px solid #6d28d9;border-radius:20px;font-size:12px;color:#c084fc;margin-bottom:1rem;font-weight:500}
+  .hero h1{font-family:'Rajdhani',sans-serif;font-size:42px;font-weight:700;line-height:1.1;margin-bottom:0.75rem}
+  .hero h1 span{color:#a855f7}
+  .hero p{font-size:15px;color:#9999b8;max-width:500px;line-height:1.6;margin-bottom:1.5rem}
+  .hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+  .btn-primary{padding:10px 22px;background:linear-gradient(135deg,#7c3aed,#9333ea);border-radius:9px;font-size:14px;font-weight:600;color:#fff;cursor:pointer;border:none;transition:all 0.2s}
+  .btn-primary:hover{background:linear-gradient(135deg,#6d28d9,#7c3aed);transform:translateY(-1px)}
+  .btn-outline{padding:10px 22px;background:none;border:1px solid #4c2d8a;border-radius:9px;font-size:14px;font-weight:600;color:#c084fc;cursor:pointer;transition:all 0.2s}
+  .btn-outline:hover{background:#1e1533}
+
+  /* FILTERS */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem;align-items:center}
+  .filter-label{font-size:13px;color:#6666a0;margin-right:4px}
+  .filter-btn{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid #2a1f4e;background:#15151d;color:#9999b8;transition:all 0.2s}
+  .filter-btn:hover{border-color:#6d28d9;color:#c084fc}
+  .filter-btn.active{background:#1e1533;border-color:#7c3aed;color:#c084fc}
+  .search-box{margin-left:auto;display:flex;align-items:center;gap:8px;background:#15151d;border:1px solid #2a1f4e;border-radius:9px;padding:6px 12px}
+  .search-box input{background:none;border:none;outline:none;color:#e8e8f0;font-size:13px;width:160px}
+  .search-box input::placeholder{color:#555580}
+  .search-icon{color:#555580;font-size:14px}
+
+  /* SECTION */
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+  .section-title{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:600;display:flex;align-items:center;gap:8px}
+  .badge{padding:3px 10px;background:#1e1533;border:1px solid #4c2d8a;border-radius:20px;font-size:11px;color:#a855f7;font-weight:600}
+  .ver-todo{font-size:13px;color:#7c3aed;cursor:pointer;font-weight:500}
+  .ver-todo:hover{color:#a855f7}
+
+  /* CARDS */
+  .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:2rem}
+  .card{background:#15151d;border-radius:12px;border:1px solid #1e1e2e;overflow:hidden;cursor:pointer;transition:all 0.25s;position:relative}
+  .card:hover{border-color:#4c2d8a;transform:translateY(-3px)}
+  .card-img{width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#1e1533,#2d1060);display:flex;align-items:center;justify-content:center;font-size:32px;position:relative}
+  .platform-badge{position:absolute;top:6px;right:6px;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700}
+  .pc{background:#1d4ed8;color:#bfdbfe}
+  .ps{background:#1e3a8a;color:#93c5fd}
+  .xbox{background:#14532d;color:#86efac}
+  .multi{background:#581c87;color:#d8b4fe}
+  .card-body{padding:10px 12px}
+  .card-title{font-size:13px;font-weight:600;margin-bottom:4px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .card-meta{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+  .price-group{display:flex;align-items:center;gap:6px}
+  .price-old{font-size:11px;color:#555580;text-decoration:line-through}
+  .price-new{font-size:15px;font-weight:700;color:#a855f7}
+  .price-free{font-size:14px;font-weight:700;color:#22c55e}
+  .discount{padding:2px 6px;background:#1e1533;border-radius:5px;font-size:10px;font-weight:700;color:#c084fc}
+  .store-tag{font-size:10px;color:#555580;background:#0f0f13;padding:2px 7px;border-radius:5px}
+  .wishlist-btn{position:absolute;top:6px;left:6px;width:26px;height:26px;border-radius:6px;background:rgba(15,15,19,0.75);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;opacity:0;transition:opacity 0.2s}
+  .card:hover .wishlist-btn{opacity:1}
+
+  /* STATS BANNER — solo 2 columnas */
+  .stats-banner{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:2rem}
+  .stat-card{background:#15151d;border:1px solid #1e1e2e;border-radius:12px;padding:1.25rem;text-align:center}
+  .stat-num{font-family:'Rajdhani',sans-serif;font-size:28px;font-weight:700;color:#a855f7}
+  .stat-label{font-size:12px;color:#6666a0;margin-top:2px}
+
+  /* PLATFORMS */
+  .platforms-row{display:flex;gap:10px;margin-bottom:2rem;flex-wrap:wrap}
+  .platform-pill{display:flex;align-items:center;gap:8px;padding:10px 18px;background:#15151d;border:1px solid #1e1e2e;border-radius:10px;cursor:pointer;transition:all 0.2s;font-size:13px;font-weight:500}
+  .platform-pill:hover{border-color:#4c2d8a}
+  .platform-pill.active-p{border-color:#7c3aed;background:#1e1533;color:#c084fc}
+  .plat-icon{font-size:18px}
+
+  /* ===== DESTACADAS ===== */
+  .featured-section{margin-bottom:2rem}
+  .featured-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:1rem}
+  @media(max-width:768px){.featured-grid{grid-template-columns:1fr}}
+  .featured-card{background:#15151d;border:1px solid #2a1f4e;border-radius:14px;overflow:hidden;cursor:pointer;transition:all 0.3s;position:relative}
+  .featured-card:hover{border-color:#7c3aed;transform:translateY(-4px);box-shadow:0 12px 36px rgba(124,58,237,0.2)}
+  .featured-card-img{width:100%;height:140px;display:flex;align-items:center;justify-content:center;font-size:52px;position:relative}
+  .featured-card-img.elden{background:linear-gradient(135deg,#1c1008,#3d2210,#1c1008)}
+  .featured-card-img.witcher{background:linear-gradient(135deg,#0a1c0a,#1a3a1a,#0a1c0a)}
+  .featured-card-img.rocket{background:linear-gradient(135deg,#0a0a2e,#101060,#0a0a2e)}
+  .feat-overlay{position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(to top,rgba(21,21,29,0.85) 0%,transparent 60%)}
+  .feat-badge-free{position:absolute;top:10px;right:10px;background:#22c55e;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;letter-spacing:0.5px}
+  .feat-badge-pct{position:absolute;top:10px;right:10px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;letter-spacing:0.5px}
+  .featured-card-body{padding:12px 14px 14px}
+  .feat-title{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;margin-bottom:4px}
+  .feat-store{font-size:11px;color:#6666a0;margin-bottom:8px}
+  .feat-prices{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .feat-old{font-size:12px;color:#555580;text-decoration:line-through}
+  .feat-new{font-size:18px;font-weight:700;color:#a855f7}
+  .feat-free-price{font-size:18px;font-weight:700;color:#22c55e}
+  /* STARS / PUNTUACIÓN */
+  .feat-rating{display:flex;align-items:center;gap:6px;padding:6px 10px;background:#0f0f13;border-radius:8px;border:1px solid #1e1e2e}
+  .feat-stars{display:flex;gap:2px}
+  .star{font-size:12px}
+  .star.on{color:#f59e0b}
+  .star.off{color:#2a2a3e}
+  .feat-score{font-size:12px;font-weight:600;color:#f59e0b;margin-left:2px}
+  .feat-votes{font-size:10px;color:#555580}
+  .feat-why{font-size:10px;color:#7c3aed;margin-top:4px;font-style:italic}
+
+  /* ===== CALENDARIO PREDICTIVO ===== */
+  .calendar-section{background:#15151d;border:1px solid #2a1f4e;border-radius:16px;padding:1.5rem;margin-bottom:2rem;position:relative;overflow:hidden;max-width:88%;margin-left:auto;margin-right:auto}
+  .calendar-section::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(168,85,247,0.08) 0%,transparent 70%);pointer-events:none}
+  .calendar-header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:0.75rem}
+  .calendar-meta{flex:1;min-width:180px}
+  .calendar-ai-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;background:linear-gradient(135deg,#1e1533,#2d1060);border:1px solid #6d28d9;border-radius:20px;font-size:10px;color:#c084fc;margin-bottom:0.5rem;font-weight:600}
+  .calendar-ai-tag .ai-dot{width:5px;height:5px;border-radius:50%;background:#a855f7;animation:pulse 1.5s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+  .calendar-meta h3{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;margin-bottom:3px}
+  .calendar-meta p{font-size:11px;color:#6666a0;line-height:1.4;max-width:340px}
+  .calendar-nav{display:flex;align-items:center;gap:8px}
+  .cal-nav-btn{width:26px;height:26px;border-radius:7px;background:#1e1e2e;border:1px solid #2a1f4e;color:#9999b8;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+  .cal-nav-btn:hover{border-color:#7c3aed;color:#c084fc}
+  .cal-month-label{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;min-width:100px;text-align:center}
+  /* Grid del calendario */
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;max-width:560px;margin:0 auto}
+  .cal-day-name{text-align:center;font-size:9px;font-weight:600;color:#555580;padding:3px 0;text-transform:uppercase}
+  .cal-cell{aspect-ratio:1;border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;cursor:pointer;transition:all 0.2s;position:relative;border:1px solid transparent;background:#0f0f13;gap:1px}
+  .cal-cell:hover:not(.empty){border-color:#4c2d8a;background:#1a1a2a}
+  .cal-cell.today{border-color:#7c3aed;background:#1e1533;color:#c084fc;font-weight:700}
+  .cal-cell.empty{cursor:default;background:transparent;border:none}
+  .cal-cell.past{opacity:0.35;cursor:default}
+  .cal-dot{width:4px;height:4px;border-radius:50%}
+  .cal-dot.high{background:#a855f7}
+  .cal-dot.free{background:#22c55e}
+  .cal-dot.medium{background:#f59e0b}
+  /* Predicciones */
+  .cal-predictions{margin-top:0.6rem;display:flex;flex-wrap:wrap;gap:6px}
+  .cal-legend{display:flex;align-items:center;gap:4px;font-size:10px;color:#6666a0}
+  .cal-legend-dot{width:6px;height:6px;border-radius:50%}
+  .cal-pred-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;margin-top:0.75rem}
+  .cal-pred-card{background:#0f0f13;border:1px solid #1e1e2e;border-radius:8px;padding:7px 10px;display:flex;align-items:center;gap:8px;transition:border-color 0.2s;cursor:pointer}
+  .cal-pred-card:hover{border-color:#4c2d8a}
+  .cal-pred-icon{font-size:18px;flex-shrink:0}
+  .cal-pred-info{}
+  .cal-pred-title{font-size:11px;font-weight:600;margin-bottom:1px}
+  .cal-pred-date{font-size:10px;color:#6666a0}
+  .cal-pred-pct{font-size:10px;font-weight:700;margin-top:1px}
+  .pct-high{color:#a855f7}
+  .pct-free{color:#22c55e}
+  .pct-med{color:#f59e0b}
+
+  /* PERFIL */
+  .profile-card{background:#15151d;border:1px solid #1e1e2e;border-radius:14px;padding:2rem;margin-bottom:1.5rem}
+  .profile-header{display:flex;align-items:center;gap:1.5rem;margin-bottom:1.5rem}
+  .avatar-big{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#c026d3);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;flex-shrink:0}
+  .profile-info h2{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700}
+  .profile-info p{font-size:13px;color:#6666a0;margin-top:2px}
+  .profile-stats{display:flex;gap:2rem}
+  .pstat{text-align:center}
+  .pstat-num{font-size:20px;font-weight:700;color:#a855f7}
+  .pstat-label{font-size:11px;color:#6666a0}
+  .divider{height:1px;background:#1e1e2e;margin:1.5rem 0}
+  .field-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1a1a2e}
+  .field-label{font-size:13px;color:#6666a0}
+  .field-val{font-size:13px;font-weight:500}
+  .edit-btn{font-size:12px;color:#7c3aed;cursor:pointer;font-weight:500}
+
+  /* PREFERENCIAS */
+  .pref-section{background:#15151d;border:1px solid #1e1e2e;border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+  .pref-section h3{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:600;margin-bottom:1rem;color:#c084fc}
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1a1a2e}
+  .toggle-row:last-child{border-bottom:none}
+  .toggle-label{font-size:13px}
+  .toggle-sub{font-size:11px;color:#555580;margin-top:1px}
+  .toggle{width:40px;height:22px;background:#2a1f4e;border-radius:11px;position:relative;cursor:pointer;border:none;transition:background 0.25s;flex-shrink:0}
+  .toggle.on{background:#7c3aed}
+  .toggle::after{content:'';position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform 0.25s}
+  .toggle.on::after{transform:translateX(18px)}
+  .genres-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:0.5rem}
+  .genre-pill{padding:7px 10px;background:#0f0f13;border:1px solid #1e1e2e;border-radius:8px;font-size:12px;text-align:center;cursor:pointer;transition:all 0.2s}
+  .genre-pill.selected{background:#1e1533;border-color:#6d28d9;color:#c084fc}
+
+
+  /* AGREGAR Y GUARDAR PREFERENCIA */
+  .add-pref-row{display:flex;align-items:center;gap:6px;margin-top:0.75rem}
+  .add-pref-row input{flex:1;background:#0f0f13;border:1px solid #4c2d8a;border-radius:8px;padding:7px 12px;color:#e8e8f0;font-size:13px;outline:none}
+  .add-pref-btn{padding:7px 14px;background:none;border:1px solid #4c2d8a;border-radius:8px;color:#c084fc;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .add-pref-btn:hover{background:#1e1533}
+  .save-pref-btn{margin-top:1.1rem;padding:9px 20px;background:linear-gradient(135deg,#7c3aed,#9333ea);border:none;border-radius:9px;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+  .save-pref-btn:hover{background:linear-gradient(135deg,#6d28d9,#7c3aed)}
+  .save-pref-confirm{font-size:12px;color:#22c55e;margin-left:10px;font-weight:600;display:none}
+
+  /* FAQ */
+  .faq-item{background:#15151d;border:1px solid #1e1e2e;border-radius:12px;margin-bottom:8px;overflow:hidden}
+  .faq-q{padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:14px;font-weight:500}
+  .faq-q:hover{background:#1a1a2a}
+  .faq-arrow{font-size:16px;color:#6666a0;transition:transform 0.2s}
+  .faq-a{padding:0 1.25rem 1rem;font-size:13px;color:#9999b8;line-height:1.6;display:none}
+  .faq-item.open .faq-arrow{transform:rotate(180deg)}
+  .faq-item.open .faq-a{display:block}
+
+  /* FAQ — ASK BOX */
+  .faq-ask-box{background:#15151d;border:1px solid #2a1f4e;border-radius:14px;padding:1.5rem;margin-top:1.5rem}
+  .faq-ask-box h3{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:#c084fc;margin-bottom:4px}
+  .faq-ask-box p{font-size:12px;color:#6666a0;margin-bottom:1rem}
+  .faq-ask-box textarea{width:100%;background:#0f0f13;border:1px solid #2a1f4e;border-radius:9px;color:#e8e8f0;font-family:'Inter',sans-serif;font-size:13px;padding:10px 14px;resize:vertical;min-height:90px;outline:none;transition:border-color 0.2s}
+  .faq-ask-box textarea:focus{border-color:#7c3aed}
+  .faq-ask-box textarea::placeholder{color:#555580}
+  .faq-ask-row{display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:10px;flex-wrap:wrap}
+  .faq-ask-note{font-size:11px;color:#555580}
+  .faq-ask-sent{font-size:12px;color:#22c55e;display:none}
+
+  /* ===== FOOTER ===== */
+  footer{background:#0d0d11;border-top:1px solid #1e1e2e;padding:3rem 2rem 1.5rem;margin-top:2rem}
+  .footer-top{display:grid;grid-template-columns:1.8fr 1fr 1fr 1fr;gap:2rem;margin-bottom:2.5rem}
+  @media(max-width:768px){.footer-top{grid-template-columns:1fr 1fr}}
+  .footer-brand .logo{margin-bottom:1rem}
+  .footer-brand p{font-size:13px;color:#6666a0;line-height:1.6;max-width:260px;margin-bottom:1.25rem}
+  .footer-social{display:flex;gap:8px}
+  .social-btn{width:34px;height:34px;border-radius:8px;background:#15151d;border:1px solid #1e1e2e;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;transition:all 0.2s;text-decoration:none}
+  .social-btn:hover{border-color:#7c3aed;background:#1e1533}
+  .footer-col h4{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;color:#c084fc;margin-bottom:0.9rem;text-transform:uppercase;letter-spacing:0.5px}
+  .footer-col ul{list-style:none;display:flex;flex-direction:column;gap:7px}
+  .footer-col ul li a{font-size:13px;color:#6666a0;text-decoration:none;transition:color 0.2s;cursor:pointer}
+  .footer-col ul li a:hover{color:#c084fc}
+  .footer-bottom{border-top:1px solid #1e1e2e;padding-top:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .footer-copy{font-size:12px;color:#444466}
+  .footer-legal{display:flex;gap:16px}
+  .footer-legal a{font-size:12px;color:#444466;text-decoration:none;cursor:pointer}
+  .footer-legal a:hover{color:#7c3aed}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon"><img src="logo.jpg" style="width:28px;height:28px;object-fit:contain;"></div>
+    <div class="logo-text">Play<span>Tracker</span></div>
+  </div>
+  <div class="nav-links">
+    <button class="nav-link active" onclick="showPage('inicio')">🏠 Inicio</button>
+    <button class="nav-link" onclick="showPage('preferencias')">⚙️ Preferencias</button>
+    <button class="nav-link" onclick="showPage('faq')">❓ Preguntas frecuentes</button>
+  </div>
+  <div class="nav-right">
+    <button class="btn-login" id="nav-login-btn" onclick="handleProfileClick()">Iniciar sesión</button>
+    <div class="avatar-big" id="nav-avatar" style="width:34px;height:34px;font-size:13px;display:none" onclick="handleProfileClick()"><span id="nav-avatar-letter"></span></div>  </div>
+</nav>
+
+<!-- ===================== MODAL DE LOGIN ===================== -->
+<div class="modal-overlay" id="login-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeLogin()">✕</button>
+    <h3>Iniciar sesión</h3>
+    <p class="modal-sub">Ingrese los datos que guardará en su perfil</p>
+    <div class="modal-field">
+      <label>Nombre de usuario</label>
+      <input type="text" id="login-nombre" placeholder="Ej: Robertobolivia">
+    </div>
+    <div class="modal-field">
+      <label>Correo electrónico</label>
+      <input type="email" id="login-correo" placeholder="Ej: freecuba@gmail.com">
+    </div>
+    <div class="modal-field">
+      <label>Moneda preferida</label>
+      <select id="login-moneda">
+        <option value="CLP">CLP (Peso chileno)</option>
+        <option value="USD">USD (Dólar)</option>
+        <option value="EUR">EUR (Euro)</option>
+        <option value="ARS">ARS (Peso argentino)</option>
+        <option value="BOB">BOB (Boliviano)</option>
+      </select>
+    </div>
+    <button class="modal-submit" onclick="submitLogin()">Ingresar</button>
+    <div class="modal-note">Sus datos estan protegidos.</div>
+  </div>
+</div>
+
+<!-- ===================== INICIO ===================== -->
+<div id="page-inicio" class="page active">
+
+  <!-- HERO -->
+  <div class="hero" style="display:flex;align-items:center;justify-content:space-between;">
+  <div>
+    <div class="hero-tag">🔥 Más de 676767 ofertas activas hoy</div>
+    <h1>Encuentra <span>ofertas</span> y juegos<br>gratuitos en un solo lugar</h1>
+    <p>Seguimos ofertas de todas las plataformas en tiempo real y futuro SÓLO PARA TI!!</p>
+    <div class="hero-actions">
+      <button class="btn-primary">Ver todas las ofertas</button>
+      <button class="btn-outline">Configurar alertas</button>
+    </div>
+  </div>
+  <img src="logo.jpg" style="width:180px;height:180px;object-fit:contain;flex-shrink:0;">
+</div>
+
+  <!-- STATS — 2 cuadros -->
+  <div class="stats-banner">
+    <div class="stat-card"><div class="stat-num">67+</div><div class="stat-label">Ofertas activas</div></div>
+    <div class="stat-card"><div class="stat-num">18</div><div class="stat-label">Juegos gratis esta semana</div></div>
+  </div>
+
+  <!-- PLATAFORMAS -->
+  <div class="platforms-row">
+    <span style="font-size:13px;color:#6666a0;align-self:center;margin-right:4px">Plataforma:</span>
+    <div class="platform-pill active-p" onclick="filterPlatform(this,'all')"><span class="plat-icon">🌐</span>Todas</div>
+    <div class="platform-pill" onclick="filterPlatform(this,'steam')"><span class="plat-icon">🖥️</span>Steam</div>
+    <div class="platform-pill" onclick="filterPlatform(this,'epic')"><span class="plat-icon">🎯</span>Epic Games</div>
+    <div class="platform-pill" onclick="filterPlatform(this,'ps')"><span class="plat-icon">🎮</span>PlayStation</div>
+    <div class="platform-pill" onclick="filterPlatform(this,'xbox')"><span class="plat-icon">🟢</span>Xbox</div>
+    <div class="platform-pill" onclick="filterPlatform(this,'gog')"><span class="plat-icon">🐒</span>Garena</div>
+  </div>
+
+  <div class="platform-pill" onclick="toggleAddPlatform()" style="border-style:dashed;color:#7c3aed">＋ Sugerir otra plataforma</div>
+<div id="add-platform-box" style="display:none;align-items:center;gap:6px">
+  <input id="platform-input" type="text" placeholder="Nombre de la plataforma..." style="background:#0f0f13;border:1px solid #4c2d8a;border-radius:8px;padding:6px 12px;color:#e8e8f0;font-size:13px;outline:none;">
+  <button onclick="addPlatform()" style="padding:6px 14px;background:#7c3aed;border:none;border-radius:8px;color:#fff;font-size:13px;cursor:pointer;font-weight:600">Agregar plataforma</button>
+</div>
+
+
+  <!-- ===== DESTACADAS ===== -->
+  <div class="featured-section">
+    <div class="section-header">
+      <div class="section-title">⭐ Destacadas</div>
+      <span class="ver-todo">Ver todo →</span>
+    </div>
+    <div style="font-size:12px;color:#6666a0;margin-bottom:1rem">Las ofertas más populares entre nuestra comunidad, seleccionadas por su valoración y porcentaje de descuento.</div>
+
+    <div class="featured-grid">
+
+      <!-- Elden Ring -->
+      <div class="featured-card">
+        <div class="featured-card-img elden">
+          🌿
+          <div class="feat-overlay"></div>
+          <div class="feat-badge-pct">−75%</div>
+        </div>
+        <div class="featured-card-body">
+          <div class="feat-title">Elden Ring</div>
+          <div class="feat-store">Steam · PC</div>
+          <div class="feat-prices">
+            <span class="feat-old">$59.990</span>
+            <span class="feat-new">$14.990</span>
+          </div>
+          <div class="feat-rating">
+            <div class="feat-stars">
+              <span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span>
+            </div>
+            <span class="feat-score">9.7</span>
+            <span class="feat-votes">/ 10 · 41,200 votos</span>
+          </div>
+          <div class="feat-why">🔥 Alto puntaje = oferta conocida por miles de usuarios</div>
+        </div>
+      </div>
+
+      <!-- The Witcher 3 -->
+      <div class="featured-card">
+        <div class="featured-card-img witcher">
+          🏔️
+          <div class="feat-overlay"></div>
+          <div class="feat-badge-pct">−80%</div>
+        </div>
+        <div class="featured-card-body">
+          <div class="feat-title">The Witcher 3: Wild Hunt</div>
+          <div class="feat-store">Garena · PC / Multi</div>
+          <div class="feat-prices">
+            <span class="feat-old">$29.990</span>
+            <span class="feat-new">$5.990</span>
+          </div>
+          <div class="feat-rating">
+            <div class="feat-stars">
+              <span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span>
+            </div>
+            <span class="feat-score">9.5</span>
+            <span class="feat-votes">/ 10 · 38,750 votos</span>
+          </div>
+          <div class="feat-why">🔥 Alto puntaje = oferta conocida por miles de usuarios</div>
+        </div>
+      </div>
+
+      <!-- Rocket League GRATIS -->
+      <div class="featured-card">
+        <div class="featured-card-img rocket">
+          🏎️
+          <div class="feat-overlay"></div>
+          <div class="feat-badge-free">GRATIS</div>
+        </div>
+        <div class="featured-card-body">
+          <div class="feat-title">Rocket League</div>
+          <div class="feat-store">Epic Games · Multi</div>
+          <div class="feat-prices">
+            <span class="feat-free-price">GRATIS</span>
+          </div>
+          <div class="feat-rating">
+            <div class="feat-stars">
+              <span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star on">★</span><span class="star off">★</span>
+            </div>
+            <span class="feat-score">8.8</span>
+            <span class="feat-votes">/ 10 · 52,100 votos</span>
+          </div>
+          <div class="feat-why">🎁 Juego gratuito · Valorado por la comunidad</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== CALENDARIO PREDICTIVO ===== -->
+  <div class="calendar-section">
+    <div class="calendar-header-row">
+      <div class="calendar-meta">
+        <div class="calendar-ai-tag"><span class="ai-dot"></span> IA Predictiva activa</div>
+        <h3>📅 Calendario de ofertas previstas</h3>
+        <p>Nuestro motor de inteligencia artificial analiza tu historial de navegación, lista de deseos y patrones históricos de descuentos para predecir cuándo es más probable que tus juegos favoritos entren en oferta. Los días marcados indican probabilidad de descuento.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px">
+        <div class="calendar-nav">
+          <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+          <div class="cal-month-label" id="cal-label">Junio 2026</div>
+          <button class="cal-nav-btn" onclick="calNext()">›</button>
+        </div>
+        <div class="cal-predictions" style="justify-content:flex-end">
+          <div class="cal-legend"><div class="cal-legend-dot" style="background:#a855f7"></div>Alta probabilidad</div>
+          <div class="cal-legend"><div class="cal-legend-dot" style="background:#22c55e"></div>Posible gratuito</div>
+          <div class="cal-legend"><div class="cal-legend-dot" style="background:#f59e0b"></div>Descuento moderado</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cal-grid" id="cal-grid">
+      <!-- generado por JS -->
+    </div>
+
+    <div class="cal-pred-cards" id="cal-pred-cards">
+      <!-- generado por JS -->
+    </div>
+  </div>
+
+  <!-- OFERTAS DESTACADAS (grid completo) -->
+  <div class="section-header">
+    <div class="section-title">⚡ Todas las ofertas</div>
+    <span class="ver-todo">Ver todo →</span>
+  </div>
+  <div class="filters">
+    <span class="filter-label">Ordenar:</span>
+    <button class="filter-btn active">Mayor descuento</button>
+    <button class="filter-btn">Precio: menor</button>
+    <button class="filter-btn">Más recientes</button>
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Buscar juego...">
+    </div>
+  </div>
+  <div class="cards-grid">
+    <div class="card"><div class="card-img">🌿<span class="platform-badge pc">PC</span><button class="wishlist-btn">♡</button></div><div class="card-body"><div class="card-title">Elden Ring</div><div class="card-meta"><div class="price-group"><span class="price-old">$59.990</span><span class="price-new">$14.990</span></div><span class="discount">-75%</span></div></div></div>
+    <div class="card"><div class="card-img">🤖<span class="platform-badge multi">MULTI</span><button class="wishlist-btn">♡</button></div><div class="card-body"><div class="card-title">Cyberpunk 2077</div><div class="card-meta"><div class="price-group"><span class="price-old">$44.990</span><span class="price-new">$13.490</span></div><span class="discount">-70%</span></div></div></div>
+    <div class="card"><div class="card-img">🧛<span class="platform-badge ps">PS</span><button class="wishlist-btn">♡</button></div><div class="card-body"><div class="card-title">Baldur's Gate 3</div><div class="card-meta"><div class="price-group"><span class="price-old">$49.990</span><span class="price-new">$34.990</span></div><span class="discount">-30%</span></div></div></div>
+    <div class="card"><div class="card-img">🏔️<span class="platform-badge pc">PC</span><button class="wishlist-btn">♡</button></div><div class="card-body"><div class="card-title">The Witcher 3</div><div class="card-meta"><div class="price-group"><span class="price-old">$29.990</span><span class="price-new">$5.990</span></div><span class="discount">-80%</span></div></div></div>
+    <div class="card"><div class="card-img">🕷️<span class="platform-badge ps">PS</span><button class="wishlist-btn">♡</button></div><div class="card-body"><div class="card-title">Spider-Man 2</div><div class="card-meta"><div class="price-group"><span class="price-old">$59.990</span><span class="price-new">$41.990</span></div><span class="discount">-30%</span></div></div></div>
+    <div class="card"><div class="card-img">🔴<span class="platform-badge xbox">XBOX</span><button class="wishlist-btn">♡</button></div><div class="card-body"><div class="card-title">Halo Infinite</div><div class="card-meta"><div class="price-group"><span class="price-old">$39.990</span><span class="price-new">$11.990</span></div><span class="discount">-70%</span></div></div></div>
+    <div class="card"><div class="card-img">🌊<span class="platform-badge multi">MULTI</span><button class="wishlist-btn">♡</button></div><div class="card-body"><div class="card-title">Dave the Diver</div><div class="card-meta"><div class="price-group"><span class="price-old">$19.990</span><span class="price-new">$9.990</span></div><span class="discount">-50%</span></div></div></div>
+    <div class="card"><div class="card-img">🧟<span class="platform-badge pc">PC</span><button class="wishlist-btn">♡</button></div><div class="card-body"><div class="card-title">Resident Evil 4</div><div class="card-meta"><div class="price-group"><span class="price-old">$39.990</span><span class="price-new">$19.990</span></div><span class="discount">-50%</span></div></div></div>
+  </div>
+
+</div><!-- fin page-inicio -->
+
+<!-- ===================== PERFIL ===================== -->
+<div id="page-perfil" class="page">
+  <div class="profile-card">
+    <div class="profile-header">
+      <div class="avatar-big"><span id="perfil-avatar-letter" style="font-family:'Rajdhani',sans-serif"></span></div>
+      <div class="profile-info" style="flex:1">
+        <h2 id="perfil-nombre">Invitado</h2>
+        <p>Miembro desde <span id="perfil-fecha"></span></p>
+      </div>
+      <div class="profile-stats">
+        <div class="pstat"><div class="pstat-num">0</div><div class="pstat-label">En lista de deseos</div></div>
+        <div class="pstat"><div class="pstat-num">0</div><div class="pstat-label">Alertas activas</div></div>
+        <div class="pstat"><div class="pstat-num">0</div><div class="pstat-label">Juegos comprados</div></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="field-row"><span class="field-label">Nombre de usuario</span><span class="field-val" id="perfil-usuario">—</span><span class="edit-btn" onclick="openLogin()">Editar</span></div>
+    <div class="field-row"><span class="field-label">Correo electrónico</span><span class="field-val" id="perfil-correo">—</span><span class="edit-btn" onclick="openLogin()">Editar</span></div>
+    <div class="field-row"><span class="field-label">Moneda preferida</span><span class="field-val" id="perfil-moneda">—</span><span class="edit-btn" onclick="openLogin()">Editar</span></div>
+    <div class="field-row" style="border:none"><span class="field-label">Notificaciones por email</span><span class="field-val">Activadas</span><span class="edit-btn" onclick="cerrarSesion()">Cerrar sesión</span></div>
+  </div>
+  <div class="profile-card">
+    <h3 style="font-family:'Rajdhani',sans-serif;font-size:16px;color:#c084fc;margin-bottom:1rem">🕹️ Lista de deseos</h3>
+    <p style="font-size:13px;color:#6666a0">Agrega juegos desde la página de inicio para verlos aquí y recibir alertas cuando bajen de precio.</p>
+  </div>
+</div>
+
+<!-- ===================== PREFERENCIAS ===================== -->
+<div id="page-preferencias" class="page">
+  <h2 style="font-family:'Rajdhani',sans-serif;font-size:26px;margin-bottom:1.5rem">⚙️ Preferencias</h2>
+  <div class="pref-section">
+    <h3>🔔 Notificaciones</h3>
+    <div class="toggle-row"><div><div class="toggle-label">Alertas de ofertas</div><div class="toggle-sub">Te avisamos cuando un juego en tu lista baja de precio</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+    <div class="toggle-row"><div><div class="toggle-label">Juegos gratuitos</div><div class="toggle-sub">Notificación cuando hay juegos gratis disponibles</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+    <div class="toggle-row"><div><div class="toggle-label">Resumen semanal</div><div class="toggle-sub">Un correo cada lunes con las mejores ofertas</div></div><button class="toggle" onclick="this.classList.toggle('on')"></button></div>
+    <div class="toggle-row"><div><div class="toggle-label">Ofertas flash (últimas horas)</div><div class="toggle-sub">Solo cuando quedan menos de 6 horas de oferta</div></div><button class="toggle" onclick="this.classList.toggle('on')"></button></div>
+  </div>
+  <div class="pref-section">
+    <h3>🎮 Plataformas que usas</h3>
+    <div class="genres-grid" style="grid-template-columns:repeat(3,1fr)" id="plataformas-pref-grid">
+      <div class="genre-pill selected" onclick="this.classList.toggle('selected')">🖥️ Steam</div>
+      <div class="genre-pill selected" onclick="this.classList.toggle('selected')">🎯 Epic Games</div>
+      <div class="genre-pill" onclick="this.classList.toggle('selected')">🎮 PlayStation</div>
+      <div class="genre-pill" onclick="this.classList.toggle('selected')">🟢 Xbox</div>
+      <div class="genre-pill" onclick="this.classList.toggle('selected')">🐒 Garena</div>
+      <div class="genre-pill" onclick="this.classList.toggle('selected')">📱 Móvil</div>
+    </div>
+    <div class="add-pref-row">
+      <input type="text" id="input-nueva-plataforma" placeholder="Agregar otra plataforma...">
+      <button class="add-pref-btn" onclick="agregarPreferencia('plataformas-pref-grid','input-nueva-plataforma')">＋ Agregar</button>
+    </div>
+    <button class="save-pref-btn" onclick="guardarPreferencia('plataformas-pref-grid','confirm-plataformas')">Guardar preferencia</button>
+    <span class="save-pref-confirm" id="confirm-plataformas">✓ Guardado</span>
+  </div>
+  <div class="pref-section">
+    <h3>🏷️ Géneros favoritos</h3>
+    <div class="genres-grid" id="generos-pref-grid">
+      <div class="genre-pill selected" onclick="this.classList.toggle('selected')">RPG</div>
+      <div class="genre-pill" onclick="this.classList.toggle('selected')">Acción</div>
+      <div class="genre-pill selected" onclick="this.classList.toggle('selected')">Aventura</div>
+      <div class="genre-pill" onclick="this.classList.toggle('selected')">Estrategia</div>
+      <div class="genre-pill" onclick="this.classList.toggle('selected')">Indie</div>
+      <div class="genre-pill" onclick="this.classList.toggle('selected')">Terror</div>
+      <div class="genre-pill selected" onclick="this.classList.toggle('selected')">Simulación</div>
+      <div class="genre-pill" onclick="this.classList.toggle('selected')">Deportes</div>
+      <div class="genre-pill" onclick="this.classList.toggle('selected')">Multijugador</div>
+    </div>
+    <div class="add-pref-row">
+      <input type="text" id="input-nuevo-genero" placeholder="Agregar otro género...">
+      <button class="add-pref-btn" onclick="agregarPreferencia('generos-pref-grid','input-nuevo-genero')">＋ Agregar</button>
+    </div>
+    <button class="save-pref-btn" onclick="guardarPreferencia('generos-pref-grid','confirm-generos')">Guardar preferencia</button>
+    <span class="save-pref-confirm" id="confirm-generos">✓ Guardado</span>
+  </div>
+  <div class="pref-section">
+    <h3>💰 Filtro de precio</h3>
+    <div class="toggle-row"><div><div class="toggle-label">Mostrar solo descuentos mayores al 50%</div></div><button class="toggle" onclick="this.classList.toggle('on')"></button></div>
+    <div class="toggle-row"><div><div class="toggle-label">Incluir contenido descargable y expansiones</div></div><button class="toggle on" onclick="this.classList.toggle('on')"></button></div>
+  </div>
+</div>
+
+<!-- ===================== FAQ ===================== -->
+<div id="page-faq" class="page">
+  <h2 style="font-family:'Rajdhani',sans-serif;font-size:26px;margin-bottom:0.5rem">❓ Preguntas frecuentes</h2>
+  <p style="font-size:14px;color:#6666a0;margin-bottom:1.5rem">Todo lo que necesitas saber sobre PlayTracker</p>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">¿Qué es PlayTracker? <span class="faq-arrow">▾</span></div><div class="faq-a">PlayTracker es una plataforma que reúne ofertas de distintas plataformas de videojuegos mandando aviso según preferencias y filtrados.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">¿PlayTracker es gratis? <span class="faq-arrow">▾</span></div><div class="faq-a">Sí, PlayTracker es completamente gratuito. Puedes agregar juegos a tu lista de deseos, recibir alertas de precios y ver ofertas sin pagar nada.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">¿Con qué frecuencia se actualizan los precios? <span class="faq-arrow">▾</span></div><div class="faq-a">Los precios se actualizan cada hora para la mayoría de las tiendas. Durante eventos de ventas grandes (como el Summer Sale de Steam) la actualización puede ser cada 15 minutos.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">¿Puedo comprar los juegos desde PlayTracker? <span class="faq-arrow">▾</span></div><div class="faq-a">No vendemos juegos directamente. PlayTracker te redirige a la tienda oficial correspondiente para que realices la compra de forma segura.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">¿Qué tiendas están disponibles actualmente? <span class="faq-arrow">▾</span></div><div class="faq-a">Actualmente monitoreamos Steam, Epic Games Store, PlayStation Store, Xbox / Microsoft Store y Garena. Estamos trabajando para agregar Nintendo eShop próximamente.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">¿Cómo configuro las alertas de precio? <span class="faq-arrow">▾</span></div><div class="faq-a">Agrega un juego a tu lista de deseos desde la página de inicio y define el precio objetivo. Cuando el juego llegue a ese precio o menos, te enviaremos un correo con el enlace directo a la tienda.</div></div>
+  <div class="faq-item"><div class="faq-q" onclick="toggleFaq(this)">¿Cómo funciona el calendario predictivo? <span class="faq-arrow">▾</span></div><div class="faq-a">Nuestro motor de IA analiza tu historial, los patrones de descuento de cada tienda y las tendencias estacionales (Summer Sale, Black Friday, etc.) para estimar en qué fechas es más probable que los juegos que sigues entren en oferta. No es una garantía, pero sí una guía basada en datos reales.</div></div>
+
+  <!-- BOX DE PREGUNTAS -->
+  <div class="faq-ask-box">
+    <h3>💬 ¿Tienes otra pregunta o una suregencia que nos quieras compartir?</h3>
+    <p>¡Agradecemos mucho tu opinión y con estamos dispuestos con mucho gusto a resolver cualquier tipo de duda!</p>
+    <textarea id="faq-textarea" placeholder="Escribe tu consulta o sugerencia..."></textarea>
+    <div class="faq-ask-row">
+      <span class="faq-ask-note">Respondemos en un plazo de 2–4 años.</span>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="faq-ask-sent" id="faq-sent">✅ ¡Mensaje enviado!</span>
+        <button class="btn-primary" style="padding:8px 18px;font-size:13px" onclick="sendFaqQuestion()">Enviar Mensaje</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="logo" style="margin-bottom:0.75rem">
+        <div class="logo-icon">🎮</div>
+        <div class="logo-text">Play<span>Tracker</span></div>
+      </div>
+      <p>Tu radar de ofertas y juegos gratuitos. Monitoreamos Steam, Epic, PlayStation, Xbox, Garena o la plataforma que desees para que nunca pagues de más.</p>
+      <div class="footer-social">
+        <a class="social-btn" title="Twitter / X">𝕏</a>
+        <a class="social-btn" title="Discord">💬</a>
+        <a class="social-btn" title="Instagram">📸</a>
+        <a class="social-btn" title="Reddit">🤖</a>
+        <a class="social-btn" title="YouTube">▶</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Explorar</h4>
+      <ul>
+        <li><a onclick="showPage('inicio')">Inicio</a></li>
+        <li><a>Ofertas del día</a></li>
+        <li><a>Juegos gratuitos</a></li>
+        <li><a>Calendario de ofertas</a></li>
+        <li><a>Top por descuento</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Plataformas</h4>
+      <ul>
+        <li><a>Steam</a></li>
+        <li><a>Epic Games</a></li>
+        <li><a>PlayStation Store</a></li>
+        <li><a>Xbox / Microsoft</a></li>
+        <li><a>Garena</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Soporte</h4>
+      <ul>
+        <li><a onclick="showPage('faq')">Preguntas frecuentes</a></li>
+        <li><a>Contacto</a></li>
+        <li><a>Reportar un error</a></li>
+        <li><a>Política de privacidad</a></li>
+        <li><a>Términos de uso</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 PlayTracker. Todos los derechos reservados.</span>
+    <div class="footer-legal">
+      <a>Privacidad</a>
+      <a>Términos</a>
+      <a>Cookies</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* --- NAVEGACIÓN --- */
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const map={'inicio':0,'preferencias':1,'faq':2};
+  if(map[id]!==undefined) document.querySelectorAll('.nav-link')[map[id]].classList.add('active');
+  window.scrollTo(0,0);
+}
+
+/* ===== LOGIN (simulado, sin backend real) ===== */
+const NOMBRES_MONEDA={CLP:'CLP (Peso chileno)',USD:'USD (Dólar)',EUR:'EUR (Euro)',ARS:'ARS (Peso argentino)',BOB:'BOB (Boliviano)'};
+
+function handleProfileClick(){
+  const datos=JSON.parse(localStorage.getItem('playtracker_user')||'null');
+  if(datos){
+    showPage('perfil');
+  } else {
+    openLogin();
+  }
+}
+
+function openLogin(){
+  document.getElementById('login-modal').classList.add('open');
+  const datos=JSON.parse(localStorage.getItem('playtracker_user')||'null');
+  if(datos){
+    document.getElementById('login-nombre').value=datos.nombre;
+    document.getElementById('login-correo').value=datos.correo;
+    document.getElementById('login-moneda').value=datos.moneda;
+  }
+}
+
+function closeLogin(){
+  document.getElementById('login-modal').classList.remove('open');
+}
+
+function submitLogin(){
+  const nombre=document.getElementById('login-nombre').value.trim();
+  const correo=document.getElementById('login-correo').value.trim();
+  const moneda=document.getElementById('login-moneda').value;
+
+  if(!nombre || !correo){
+    alert('Ingresa al menos un nombre de usuario y un correo (pueden ser cualquiera, no se validan).');
+    return;
+  }
+
+  const datosExistentes=JSON.parse(localStorage.getItem('playtracker_user')||'null');
+  const fecha=datosExistentes?datosExistentes.fecha:new Date().toLocaleDateString('es-CL',{month:'long',year:'numeric'});
+
+  const datos={nombre,correo,moneda,fecha};
+  localStorage.setItem('playtracker_user',JSON.stringify(datos));
+
+  closeLogin();
+  aplicarDatosUsuario(datos);
+  showPage('perfil');
+}
+
+function cerrarSesion(){
+  localStorage.removeItem('playtracker_user');
+  aplicarDatosUsuario(null);
+  showPage('inicio');
+}
+
+function aplicarDatosUsuario(datos){
+  const navBtn=document.getElementById('nav-login-btn');
+  const navAvatar=document.getElementById('nav-avatar');
+  const navLetter=document.getElementById('nav-avatar-letter');
+
+  if(datos){
+    const inicial=datos.nombre.trim().charAt(0).toUpperCase();
+    navBtn.style.display='none';
+    navAvatar.style.display='flex';
+    navLetter.textContent=inicial;
+
+    document.getElementById('perfil-avatar-letter').textContent=inicial;
+    document.getElementById('perfil-nombre').textContent=datos.nombre;
+    document.getElementById('perfil-usuario').textContent=datos.nombre;
+    document.getElementById('perfil-correo').textContent=datos.correo;
+    document.getElementById('perfil-moneda').textContent=NOMBRES_MONEDA[datos.moneda]||datos.moneda;
+    document.getElementById('perfil-fecha').textContent=datos.fecha;
+  } else {
+    navBtn.style.display='inline-block';
+    navAvatar.style.display='none';
+    document.getElementById('perfil-nombre').textContent='Invitado';
+    document.getElementById('perfil-usuario').textContent='—';
+    document.getElementById('perfil-correo').textContent='—';
+    document.getElementById('perfil-moneda').textContent='—';
+    document.getElementById('perfil-fecha').textContent='';
+    document.getElementById('perfil-avatar-letter').textContent='';
+  }
+}
+
+/* Al cargar la página, revisa si ya había una sesión guardada */
+(function inicializarSesion(){
+  const datos=JSON.parse(localStorage.getItem('playtracker_user')||'null');
+  aplicarDatosUsuario(datos);
+})();
+
+function filterPlatform(el){
+  document.querySelectorAll('.platform-pill').forEach(x=>x.classList.remove('active-p'));
+  el.classList.add('active-p');
+  
+}
+function toggleAddPlatform(){
+  const box=document.getElementById('add-platform-box');
+  box.style.display=box.style.display==='none'?'flex':'none';
+  if(box.style.display==='flex') document.getElementById('platform-input').focus();
+}
+function addPlatform(){
+  const input=document.getElementById('platform-input');
+  const name=input.value.trim();
+  if(!name) return;
+  const pill=document.createElement('div');
+  pill.className='platform-pill';
+  pill.innerHTML=`<span class="plat-icon">🕹️</span>${name}`;
+  pill.onclick=()=>filterPlatform(pill,name.toLowerCase());
+  document.getElementById('add-platform-box').before(pill);
+  input.value='';
+  toggleAddPlatform();
+}
+
+/* ===== MENÚ LATERAL DE PREFERENCIAS ===== */
+/* ===== AGREGAR UNA PREFERENCIA NUEVA (plataforma o género) ===== */
+function agregarPreferencia(gridId, inputId){
+  const input=document.getElementById(inputId);
+  const valor=input.value.trim();
+  if(!valor) return;
+  const grid=document.getElementById(gridId);
+  const pill=document.createElement('div');
+  pill.className='genre-pill selected';
+  pill.textContent=valor;
+  pill.onclick=function(){ this.classList.toggle('selected'); };
+  grid.appendChild(pill);
+  input.value='';
+  input.focus();
+}
+
+/* ===== GUARDAR LAS PREFERENCIAS SELECCIONADAS EN LOCALSTORAGE ===== */
+function guardarPreferencia(gridId, confirmId){
+  const grid=document.getElementById(gridId);
+  const seleccionadas=[...grid.querySelectorAll('.genre-pill.selected')].map(p=>p.textContent.trim());
+  localStorage.setItem('playtracker_'+gridId, JSON.stringify(seleccionadas));
+
+  const confirm=document.getElementById(confirmId);
+  confirm.style.display='inline';
+  setTimeout(()=>{ confirm.style.display='none'; }, 2500);
+}
+
+/* Al cargar la página, restaura las preferencias de plataformas y géneros ya guardadas */
+function restaurarPreferencias(gridId){
+  const guardado=JSON.parse(localStorage.getItem('playtracker_'+gridId)||'null');
+  if(!guardado) return;
+  const grid=document.getElementById(gridId);
+  grid.querySelectorAll('.genre-pill').forEach(pill=>{
+    const texto=pill.textContent.trim();
+    if(guardado.includes(texto)) pill.classList.add('selected');
+    else pill.classList.remove('selected');
+  });
+}
+restaurarPreferencias('plataformas-pref-grid');
+restaurarPreferencias('generos-pref-grid');
+
+function toggleFaq(el){
+  const item=el.parentElement;
+  const wasOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(x=>x.classList.remove('open'));
+  if(!wasOpen) item.classList.add('open');
+}
+document.querySelectorAll('.filter-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    btn.closest('.filters').querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+/* --- FAQ SEND --- */
+function sendFaqQuestion(){
+  const ta=document.getElementById('faq-textarea');
+  if(ta.value.trim().length<5) return;
+  document.getElementById('faq-sent').style.display='inline';
+  ta.value='';
+  setTimeout(()=>{ document.getElementById('faq-sent').style.display='none'; },4000);
+}
+
+/* ===== CALENDARIO PREDICTIVO ===== */
+// Datos simulados de predicción IA
+const predictions = {
+  // clave: "YYYY-M-D"  valor: tipo ('high','free','medium')
+  // Junio 2026
+  '2026-6-5':  'medium',
+  '2026-6-10': 'high',
+  '2026-6-12': 'free',
+  '2026-6-18': 'high',
+  '2026-6-20': 'high',
+  '2026-6-24': 'medium',
+  '2026-6-27': 'free',
+  // Julio 2026
+  '2026-7-3':  'medium',
+  '2026-7-7':  'high',
+  '2026-7-11': 'free',
+  '2026-7-15': 'high',
+  '2026-7-22': 'high',
+  '2026-7-28': 'medium',
+  // Mayo 2026
+  '2026-5-2':  'high',
+  '2026-5-9':  'medium',
+  '2026-5-16': 'free',
+  '2026-5-23': 'high',
+  '2026-5-29': 'medium',
+};
+
+const predGames = {
+  '2026-6-10': {icon:'🌿', title:'Elden Ring', pct:'high', label:'~85% prob. de oferta'},
+  '2026-6-12': {icon:'🏎️', title:'Rocket League', pct:'free', label:'~90% posible gratuito'},
+  '2026-6-18': {icon:'🤖', title:'Cyberpunk 2077', pct:'high', label:'~78% prob. de oferta'},
+  '2026-6-20': {icon:'🧛', title:"Baldur's Gate 3", pct:'high', label:'~70% prob. de oferta'},
+  '2026-6-27': {icon:'🔫', title:'Starfield', pct:'free', label:'~65% posible gratuito'},
+  '2026-7-7':  {icon:'🏔️', title:'The Witcher 3', pct:'high', label:'~80% prob. de oferta'},
+  '2026-7-11': {icon:'🌌', title:'Returnal', pct:'free', label:'~72% posible gratuito'},
+};
+
+const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+let calYear = 2026, calMonth = 5; // 0-indexed, 5=junio
+
+function renderCalendar(){
+  const grid = document.getElementById('cal-grid');
+  const label = document.getElementById('cal-label');
+  label.textContent = MONTHS[calMonth] + ' ' + calYear;
+
+  // Cabecera
+  const days = ['Lu','Ma','Mi','Ju','Vi','Sa','Do'];
+  let html = days.map(d=>`<div class="cal-day-name">${d}</div>`).join('');
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=Dom
+  const adjustedFirst = (firstDay===0)?6:firstDay-1; // lunes=0
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const today = new Date();
+
+  // Celdas vacías iniciales
+  for(let i=0;i<adjustedFirst;i++) html+=`<div class="cal-cell empty"></div>`;
+
+  for(let d=1;d<=daysInMonth;d++){
+    const key = `${calYear}-${calMonth+1}-${d}`;
+    const dot = predictions[key];
+    const isToday = (today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d);
+    const isPast = new Date(calYear,calMonth,d) < new Date(today.getFullYear(),today.getMonth(),today.getDate()) && !isToday;
+    let cls = 'cal-cell';
+    if(isToday) cls+=' today';
+    if(isPast) cls+=' past';
+    const dotHtml = dot ? `<div class="cal-dot ${dot}"></div>` : '';
+    html += `<div class="${cls}" title="${dot?'Predicción IA: '+dot:''}">${d}${dotHtml}</div>`;
+  }
+  grid.innerHTML = html;
+
+  // Tarjetas de predicción para el mes actual
+  const predCards = document.getElementById('cal-pred-cards');
+  let cards = '';
+  for(const [key,game] of Object.entries(predGames)){
+    const [y,m] = key.split('-').map(Number);
+    if(y===calYear && m===calMonth+1){
+      const pctClass = game.pct==='high'?'pct-high':game.pct==='free'?'pct-free':'pct-med';
+      cards += `<div class="cal-pred-card">
+        <div class="cal-pred-icon">${game.icon}</div>
+        <div class="cal-pred-info">
+          <div class="cal-pred-title">${game.title}</div>
+          <div class="cal-pred-date">${key.split('-').slice(2).join('/')} de ${MONTHS[calMonth]}</div>
+          <div class="cal-pred-pct ${pctClass}">${game.label}</div>
+        </div>
+      </div>`;
+    }
+  }
+  predCards.innerHTML = cards || `<div style="font-size:12px;color:#555580;padding:8px 0">Sin predicciones destacadas para este mes.</div>`;
+}
+
+function calPrev(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); }
+function calNext(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); }
+
+renderCalendar();
+</script>
+</body>
+</html>
